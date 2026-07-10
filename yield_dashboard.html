@@ -26,6 +26,8 @@ main { padding: 24px 32px 32px; display: flex; flex-direction: column; gap: 24px
 .toggle.on .dot { box-shadow: 0 0 6px 1px currentColor; }
 .toggle.off { color: #484f58; }
 .toggle.off .dot { opacity: 0.3; }
+.toggle-all { padding: 4px 10px; border: 1px solid #30363d; border-radius: 6px; font-size: 0.72rem; cursor: pointer; background: #21262d; color: #8b949e; font-weight: 500; transition: all 0.15s; }
+.toggle-all:hover { color: #c9d1d9; border-color: #484f58; }
 canvas { width: 100% !important; height: 420px !important; }
 .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
 .card { background: #161b22; border: 1px solid #21262d; border-radius: 12px; padding: 20px; }
@@ -59,13 +61,13 @@ footer { font-size: 0.75rem; color: #484f58; padding: 0 32px 24px; }
   <section class="cards" id="cards"></section>
 
   <div class="chart-container">
-    <div class="chart-header"><h2>APY (%)</h2></div>
+    <div class="chart-header"><h2>APY (%)</h2><button class="toggle-all" id="btn-all-apy">All</button></div>
     <div class="toggles" id="apy-toggles"></div>
     <canvas id="apyChart"></canvas>
   </div>
 
   <div class="chart-container">
-    <div class="chart-header"><h2>TVL (USD)</h2></div>
+    <div class="chart-header"><h2>TVL (USD)</h2><button class="toggle-all" id="btn-all-tvl">All</button></div>
     <div class="toggles" id="tvl-toggles"></div>
     <canvas id="tvlChart"></canvas>
   </div>
@@ -215,6 +217,7 @@ function refresh(wd) {
   buildTvlChart(w);
   buildToggles('apy-toggles');
   buildToggles('tvl-toggles');
+  updateToggleAllButtons();
 }
 
 document.getElementById('time-buttons').addEventListener('click', function(e) {
@@ -227,19 +230,44 @@ document.getElementById('time-buttons').addEventListener('click', function(e) {
 
 document.querySelector('main').addEventListener('click', function(e) {
   var l = e.target.closest('.toggle');
-  if (!l) return;
-  e.preventDefault();
-  var k = l.getAttribute('data-key');
-  visibility[k] = !visibility[k];
-  if (visibility[k]) { l.classList.remove('off'); l.classList.add('on'); l.querySelector('input').checked = true; }
-  else { l.classList.remove('on'); l.classList.add('off'); l.querySelector('input').checked = false; }
+  if (l) {
+    e.preventDefault();
+    var k = l.getAttribute('data-key');
+    visibility[k] = !visibility[k];
+    if (visibility[k]) { l.classList.remove('off'); l.classList.add('on'); l.querySelector('input').checked = true; }
+    else { l.classList.remove('on'); l.classList.add('off'); l.querySelector('input').checked = false; }
+    syncToggles(k);
+    refresh(currentWindow);
+    return;
+  }
+  if (e.target.classList.contains('toggle-all')) {
+    var anyOn = POOLS.some(function(p) { return visibility[p]; });
+    for (var p = 0; p < POOLS.length; p++) { visibility[POOLS[p]] = !anyOn; }
+    syncAllToggles();
+    refresh(currentWindow);
+    return;
+  }
+});
+
+function syncToggles(k) {
   var all = document.querySelectorAll('.toggle[data-key="' + k + '"]');
   for (var m = 0; m < all.length; m++) {
     all[m].classList.remove('off','on'); all[m].classList.add(visibility[k] ? 'on' : 'off');
     var cb = all[m].querySelector('input'); if (cb) cb.checked = visibility[k];
   }
-  refresh(currentWindow);
-});
+}
+
+function syncAllToggles() {
+  for (var p = 0; p < POOLS.length; p++) syncToggles(POOLS[p]);
+}
+
+function updateToggleAllButtons() {
+  var anyOn = POOLS.some(function(p) { return visibility[p]; });
+  var btns = document.querySelectorAll('.toggle-all');
+  for (var b = 0; b < btns.length; b++) {
+    btns[b].textContent = anyOn ? 'None' : 'All';
+  }
+}
 
 window.addEventListener('load', function() {
   setTimeout(function() { refresh('30'); }, 100);
