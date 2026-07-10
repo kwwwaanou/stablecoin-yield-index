@@ -12,6 +12,7 @@ POOLS = {
     "limUSD (Liminal)": "e0ab5e92-79be-4e00-aa28-a2447db45282",
     "feUSD HYPE (Felix)": "2bae7cf8-d278-4b27-9959-7f5f92c6f14b",
     "feUSD BTC (Felix)": "d2a0cae6-7a65-4c1c-9995-327ddbcfb37f",
+    "feUSD kHYPE (Felix)": "87214584-0bc8-4167-80e0-8be77a699f7f",
     "AAVE USDC": "aa70268e-4b52-42bf-a116-608b370f9501",
     "Fluid USDC": "4438dabc-7f0c-430b-8136-2722711ae663",
 }
